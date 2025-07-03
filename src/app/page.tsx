@@ -111,7 +111,7 @@ export default function Home() {
         setCurrentPage(page);
         setTotalPages(Math.ceil(size / pageSize));
         
-        setResults(list.map((item: any) => ({
+        setResults(list.map((item: SearchResult) => ({
           순위: item.순위 || 0,
           단지명: item.단지명 || '',
           지역명: item.지역명 || '',
@@ -179,7 +179,7 @@ export default function Home() {
   // 컴포넌트 마운트 시 슬라이더 값 동기화
   useEffect(() => {
     syncPriceRangeWithParams();
-  }, []);
+  }, [syncPriceRangeWithParams]);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -202,9 +202,10 @@ export default function Home() {
       .then(res => res.text())
       .then(text => {
         const parsed = Papa.parse(text, { header: true, skipEmptyLines: true });
-        const codes = parsed.data
-          .filter((row: any) => row['폐지여부'] === '존재')
-          .map((row: any) => ({
+        const rows = parsed.data as Record<string, string>[];
+        const codes = rows
+          .filter((row) => row['폐지여부'] === '존재')
+          .map((row) => ({
             code: row['법정동코드'],
             name: row['법정동명']?.split(' ').pop() || row['법정동명'],
             fullName: row['법정동명'],
@@ -681,7 +682,7 @@ export default function Home() {
 
         {results.length === 0 && !loading && (
           <div className="bg-white rounded-lg shadow-md p-6 text-center text-gray-500">
-            검색 조건을 입력하고 검색 버튼을 클릭하거나, "예시 데이터 로드" 버튼을 클릭하여 테스트해보세요.
+            검색 조건을 입력하고 검색 버튼을 클릭하거나, &quot;예시 데이터 로드&quot; 버튼을 클릭하여 테스트해보세요.
           </div>
         )}
       </div>
