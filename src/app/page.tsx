@@ -45,10 +45,16 @@ interface LegalDongCode {
 }
 
 export default function Home() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}${mm}${dd}`;
+
   const [searchParams, setSearchParams] = useState<SearchParams>({
     신고가구분: '05',
-    검색시작년월일: '20250628',
-    검색종료년월일: '20250628',
+    검색시작년월일: todayStr,
+    검색종료년월일: todayStr,
     법정동코드: '4113510900',
     건물유형구분: '01',
     거래구분: '01',
@@ -73,12 +79,6 @@ export default function Home() {
   const [dongSearchResults, setDongSearchResults] = useState<LegalDongCode[]>([]);
   const [showDongSearch, setShowDongSearch] = useState<boolean>(false);
   const [dongCodes, setDongCodes] = useState<LegalDongCode[]>([]);
-
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, '0');
-  const dd = String(today.getDate()).padStart(2, '0');
-  const todayStr = `${yyyy}${mm}${dd}`;
 
   const handleSearch = async (page: number = 1) => {
     setLoading(true);
