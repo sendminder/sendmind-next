@@ -74,6 +74,12 @@ export default function Home() {
   const [showDongSearch, setShowDongSearch] = useState<boolean>(false);
   const [dongCodes, setDongCodes] = useState<LegalDongCode[]>([]);
 
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const todayStr = `${yyyy}${mm}${dd}`;
+
   const handleSearch = async (page: number = 1) => {
     setLoading(true);
     try {
@@ -249,9 +255,9 @@ export default function Home() {
   const loadExampleData = () => {
     setSearchParams({
       신고가구분: '05',
-      검색시작년월일: '20250628',
-      검색종료년월일: '20250628',
-      법정동코드: '4113510900',
+      검색시작년월일: todayStr,
+      검색종료년월일: todayStr,
+      법정동코드: '1171010100',
       건물유형구분: '01',
       거래구분: '01',
       최소금액: '-1',
@@ -306,12 +312,6 @@ export default function Home() {
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-700">검색 조건</h2>
-            <button
-              onClick={loadExampleData}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
-            >
-              예시 데이터 로드
-            </button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -354,7 +354,7 @@ export default function Home() {
                     setShowDongSearch(true);
                   }}
                   onFocus={() => setShowDongSearch(true)}
-                  placeholder="동 이름을 입력하세요 (예: 삼평동, 신사동)"
+                  placeholder="잠실동"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
                 
@@ -459,18 +459,6 @@ export default function Home() {
 
             {/* 선택 옵션들 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">신고가구분</label>
-              <select
-                value={searchParams.신고가구분}
-                onChange={(e) => updateSearchParam('신고가구분', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="05">신고가</option>
-                <option value="01">일반</option>
-              </select>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">건물유형구분</label>
               <select
                 value={searchParams.건물유형구분}
@@ -544,7 +532,8 @@ export default function Home() {
                 <span className="text-sm text-gray-500">업데이트: {updateDate}</span>
               )}
             </div>
-            <div className="overflow-x-auto">
+            {/* 데스크탑/태블릿: 테이블 */}
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full table-auto">
                 <thead>
                   <tr className="bg-gray-100">
@@ -617,8 +606,29 @@ export default function Home() {
                 </tbody>
               </table>
             </div>
-
-            {/* 페이지네이션 */}
+            {/* 모바일: 카드형 리스트 */}
+            <div className="block md:hidden space-y-4">
+              {results.map((result, index) => (
+                <div key={index} className="bg-gray-100 rounded-lg p-4 shadow flex flex-col gap-2">
+                  <div className="flex justify-between">
+                    <span className="font-bold text-blue-700">{result.단지명}</span>
+                    <span className="text-xs text-gray-500">{result.순위}위</span>
+                  </div>
+                  <div className="text-sm text-gray-700">{result.지역명} | {result.전용면적}㎡ ({result.전용평형}평)</div>
+                  <div className="text-green-700 font-semibold">거래금액: {formatPrice(result.거래금액)}</div>
+                  <div className="text-xs text-gray-500">거래일자: {result.거래년월일} / {result.거래층}층</div>
+                  {result.직전거래금액 > 0 && (
+                    <div className="text-xs text-gray-500">직전거래: {formatPrice(result.직전거래금액)} ({result.직전거래년월일}, {result.직전거래층}층)</div>
+                  )}
+                  <div className="flex gap-2 text-xs">
+                    <span className={`font-medium ${getChangeColor(result.변동률)}`}>{getChangeArrow(result.변동률)} {result.변동가격 > 0 ? '+' : ''}{formatPrice(result.변동가격)}</span>
+                    <span className={`font-medium ${getChangeColor(result.변동률)}`}>{result.변동률 > 0 ? '+' : ''}{result.변동률.toFixed(2)}%</span>
+                  </div>
+                  <div className="text-xs text-gray-400">번지: {result.번지}</div>
+                </div>
+              ))}
+            </div>
+            {/* 페이지네이션, 페이지 정보 등은 기존대로 유지 */}
             {totalPages > 1 && (
               <div className="mt-6 flex justify-center">
                 <div className="flex items-center space-x-2">
@@ -630,7 +640,6 @@ export default function Home() {
                   >
                     이전
                   </button>
-
                   {/* 페이지 번호들 */}
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
@@ -643,7 +652,6 @@ export default function Home() {
                     } else {
                       pageNum = currentPage - 2 + i;
                     }
-
                     return (
                       <button
                         key={pageNum}
@@ -658,7 +666,6 @@ export default function Home() {
                       </button>
                     );
                   })}
-
                   {/* 다음 페이지 버튼 */}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
@@ -670,8 +677,6 @@ export default function Home() {
                 </div>
               </div>
             )}
-
-            {/* 페이지 정보 */}
             {totalPages > 1 && (
               <div className="mt-4 text-center text-sm text-gray-500">
                 {currentPage} / {totalPages} 페이지 (총 {totalSize}건)
