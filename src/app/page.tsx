@@ -521,6 +521,20 @@ export default function Home() {
               {loading ? '검색 중...' : '실거래 검색'}
             </button>
           </div>
+
+          <div className="mt-6">
+            <button
+              onClick={() => {
+                setSearchParams(prev => ({
+                  ...prev,
+                  검색시작년월일: todayStr,
+                  검색종료년월일: todayStr,
+                }));
+              }}
+            >
+              오늘 날짜로 초기화
+            </button>
+          </div>
         </div>
 
         {/* 결과 표시 섹션 */}
